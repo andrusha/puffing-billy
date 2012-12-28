@@ -22,6 +22,10 @@ shared_examples_for 'a proxy server' do
   it 'should proxy DELETE requests' do
     http.delete('/echo').body.should == 'DELETE /echo'
   end
+
+  it 'should proxy OPTIONS requests' do
+    http.run_request(:options, '/', '', {}).headers['HTTP-X-EchoServer'].should == 'OPTIONS /'
+  end
 end
 
 shared_examples_for 'a request stub' do
@@ -53,6 +57,12 @@ shared_examples_for 'a request stub' do
     proxy.stub("#{url}/bam", :method => :delete).
       and_return(:text => 'hello, DELETE!')
     http.delete('/bam').body.should == 'hello, DELETE!'
+  end
+
+  it 'should stub OPTIONS requests' do
+    proxy.stub("#{url}/pew", :method => :options).
+      and_return(:headers => {'HTTP-X-Hello' => 'hello, OPTIONS!'})
+    http.run_request(:options, '/pew', '', {}).headers['http_x_hello'] == 'hello, OPTIONS!'
   end
 end
 
